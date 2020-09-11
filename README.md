@@ -1,5 +1,5 @@
 # Multivariant-Nonlinear-Regression-in-VBA-Small-Neural-Network-
-#### Despite the big boom in Neural Networks. The common worker is still outside of his/her capabilities.
+#### Despite the big boom in Neural Networks. The common worker is still outside of it's capabilities.
 #### The idea of the proyect is to give an easy tool for small neural networks (something around 6 layers and 80 neurons maybe).
 #### It has to run without any other software than Microsoft Excel.
 #### This work is inspired in Emanuele Bonura's Blog "A Neural Network in 11 lines…of VBA!" and Carlos Ruiz from UTN FRRo.
