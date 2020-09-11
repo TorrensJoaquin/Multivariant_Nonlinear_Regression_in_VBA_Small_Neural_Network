@@ -18,3 +18,4 @@ Comming Soon:
 A diagnosis tool.
 Training/Test división.
 During this work Softplus, Sigmoid, Tanh and Relu Function were implemented. Relu is in the stable versión. (Yes, we all look at relu at first and say, No Way!, but today is the right choice)
+Please. Have the inmediate window visible. Data will be shown
