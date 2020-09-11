@@ -143,7 +143,7 @@ Beep
 Application.Wait (Now + TimeValue("0:00:01"))
 Beep
 End Sub
-Sub BackPropagationAlgorithm()
+Sub InitiateBackPropagationAlgorithm()
     Call InitialSettings
 ''
 ReDim layer(0 To n_hid_layer + 1, 1 To SizeOfDataBase, 1 To Application.WorksheetFunction.Max(n_neurons_hid_layer) + 1)
