@@ -13,7 +13,7 @@
 #### SizeOfDataBase = 'The size of the database
 #### UploadOldModel = 'Train more an existing model.
 #### ChangeArquitecture = 'It's common, and recommended, start with a shallow neural network and start increasing/decreasing neurons/layers. If it's true, will recycle old weights and initialize new ones.
-#### SamplesInBatch = 'Maximun of 1024
+#### SamplesInBatch = 'Number of Samples on each Batch. Maximum of 1024
 #### iter= Number of iterations
 # Comming Soon:
 #### A diagnosis tool.
