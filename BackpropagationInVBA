@@ -131,7 +131,8 @@ For iter = 0 To 10
         Next i
     Next j
 Next iter
-LearningRatioRangeResult(LearningRatioIndex) = LearningRatioRangeResult(LearningRatioIndex) + WorksheetFunction.SumSq(A3dTo2d(Layer_Error, n_hid_layer + 1, SizeOfDataBase, y_features))
+LearningRatioRangeResult(LearningRatioIndex) = LearningRatioRangeResult(LearningRatioIndex) + SumSQError
+
 Next LearningRatioIndex
 For i = 0 To UBound(LearningRatioRangeArray, 1)
     Debug.Print LearningRatioRangeArray(i) & "  ---> " & LearningRatioRangeResult(i)
