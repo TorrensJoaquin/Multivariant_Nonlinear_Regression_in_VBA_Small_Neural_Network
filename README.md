@@ -16,8 +16,9 @@
 #### ChangeArquitecture = 'It's common, and recommended, start with a shallow neural network and start increasing/decreasing neurons/layers. If it's true, will recycle old weights and initialize new ones.
 #### SamplesInBatch = 'Number of Samples on each Batch. Maximum of 1024
 #### iter= Number of iterations
+#### LearningRatio = 'You can perform a range test every time you want. This value will depend on the dataset and NN architecture.
 # Comming Soon:
 #### A diagnosis tool.
-#### Training/Test división.
-## During this work Softplus, Sigmoid, Tanh and Relu Function were implemented. Relu is in the stable versión. (Yes, we all look at relu at first and say, No Way!, but today is the right choice)
+#### Training/Test division.
+## During this work Softplus, Sigmoid, Tanh and Relu Function were implemented. Relu is in the stable versión. (Yes, we all look at ReLu at first and say, No Way!, but today is the right choice)
 #### Please. Have the inmediate window visible. Data will be shown
