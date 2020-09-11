@@ -1,0 +1,5 @@
+Function MyNeuralWyB()
+'The First time you use this you have to put this formula.
+'You will have to overwrite with the result later.
+'Sorry for the bother but there is no way to ignore the Compile Error of Function not Defined. Even if it is under a IF statement.
+End Function
