@@ -3,7 +3,7 @@
 #### The idea of the proyect is to give an easy tool for small neural networks (something around 6 layers and 80 neurons maybe).
 #### It has to run without any other software than Microsoft Excel.
 #### This work is inspired in Emanuele Bonura's Blog "A Neural Network in 11 lines…of VBA!" and Carlos Ruiz from UTN FRRo.
-#### You will need a sheet called DATA. Were you can put the data. (x's in the left, y's in the right, 1 row of header) An Empty sheet called Result. Were the code of the formula is going to be generated.
+#### You will need a sheet called Data. Were you can put the data. (x's in the left, y's in the right, 1 row of header) An Empty sheet called Result. Were the code of the formula is going to be generated.
 #### A Learning Ratio Range Taste is also included.
 # Tuning of the following parameters in the modules is required:
 #### n_hid_layer = 'Number of hidden layers
