@@ -8,6 +8,7 @@ Dim n_hid_layer As Long
 Dim n_neurons_hid_layer() As Integer
 Dim X() As Variant
 Dim XDataSet() As Variant
+Dim YDataSet() As Variant
 Dim Y() As Variant
 Dim syn() As Variant
 Dim Gradients() As Variant
@@ -26,6 +27,7 @@ Dim YMinimum()
 Dim YMaximum()
 Dim SamplesInBatch As Integer
 Dim NumberOfBatchs As Integer 'For big data samples
+Dim NumberOfIterations As Integer
 Sub InitialSettings()
 Dim UploadOldModel As Boolean
 Dim ChangeArquitecture As Boolean
@@ -51,22 +53,24 @@ Dim ChangeArquitecture As Boolean
 'Inspired by Emanuele Bonura's work in "A Neural Network in 11 lines…of VBA!"
 'Any suggestion please send it to torrensjoaquin@gmail.com
 '''Parametric Variable
-n_hid_layer = 3
+n_hid_layer = 2
 x_features = 7
 y_features = 1
 ReDim n_neurons_hid_layer(n_hid_layer + 1)
 n_neurons_hid_layer(0) = x_features
-n_neurons_hid_layer(1) = 7
-n_neurons_hid_layer(2) = 7
-n_neurons_hid_layer(3) = 7
+n_neurons_hid_layer(1) = 5
+n_neurons_hid_layer(2) = 5
 n_neurons_hid_layer(n_hid_layer + 1) = y_features
 SizeOfDataBase = 392
 UploadOldModel = True
-ChangeArquitecture = True
+ChangeArquitecture = False
 SamplesInBatch = 1023
+LearningRatio = 0.00005
+NumberOfIterations = 3000
 '''
     Worksheets("Data").Select
     XDataSet = Worksheets("Data").range(Cells(2, 1), Cells(SizeOfDataBase + 1, x_features)).Value2
+    YDataSet = Worksheets("Data").range(Cells(2, x_features + 1), Cells(SizeOfDataBase + 1, x_features + y_features)).Value2
 '''
     If UploadOldModel = False Then
     
@@ -150,8 +154,7 @@ Dim z As Integer
 Dim j As Long
 Dim i As Long
 Dim k As Long
-LearningRatio = 0.00001
-For iter = 0 To 1500
+For iter = 0 To NumberOfIterations
     '''
     ReDim Gradients(n_hid_layer, 1 To Application.WorksheetFunction.Max(n_neurons_hid_layer) + 1, 1 To Application.WorksheetFunction.Max(n_neurons_hid_layer) + 1)
     '''
@@ -172,7 +175,9 @@ For iter = 0 To 1500
 Next iter
 ''Print the Function
 Call PrintTheFunction
-
+On Error Resume Next
+Call PrintDebuggerFunction
+On Error GoTo 0
 'This will make a sound to wake you up
 Beep
 Application.Wait (Now + TimeValue("0:00:01"))
@@ -481,7 +486,12 @@ For i = 1 To SizeOfDataBase
         layer(0, i, n_neurons_hid_layer(0) + 1) = 1
 Next i
 '''Y
-Y = Worksheets("Data").range(Cells(2 + (z - 1) * SizeOfDataBase, x_features + 1), Cells(SizeOfDataBase * z + 1, x_features + y_features)).Value2
+ReDim Y(1 To SizeOfDataBase, 1 To y_features)
+For i = 1 To y_features
+    For j = 1 To SizeOfDataBase
+        Y(j, i) = YDataSet(j + (z - 1) * SizeOfDataBase, i)
+    Next j
+Next i
 '''Y (I should add the data scalation)
 '''First lets find out the minimun and maximun value for every y feature
 '''Then cry thinking of how much easy is to do this with other programming lenguages
@@ -529,3 +539,102 @@ For LargeXIteration = 1 To LargeX
 Next LargeXIteration
 A3dTo2dTranspose = aux
 End Function
+Sub PrintDebuggerFunction()
+Dim i As Integer
+Dim j As Integer
+Dim z As Integer
+iter = 1
+Worksheets("Result2").range("A" & iter).Value = "Function MyNNVisualization (X as Range, RequestedLayer As Integer) As Variant"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "Dim n_neurons_hid_layer(1 To " & n_hid_layer + 1 & ") As Integer"
+iter = iter + 1
+For i = 1 To n_hid_layer + 1
+Worksheets("Result2").range("A" & iter).Value = "n_neurons_hid_layer(" & i & ") =" & n_neurons_hid_layer(i)
+iter = iter + 1
+Next i
+Worksheets("Result2").range("A" & iter).Value = "Dim layer(" & n_hid_layer + 1 & ", 1 To " & Application.WorksheetFunction.Max(n_neurons_hid_layer) + 1 & ") As Double"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "syn = MyNeuralWyB()"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "Dim aux1() As Variant"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "Dim aux2() As Variant"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "ReDim aux2(1 To " & x_features & ", 1 To " & n_neurons_hid_layer(1) & ")"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "Dim aux3() As Variant"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "Dim XAverage(1 To " & x_features & ")"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "Dim XStandardDeviation(1 To " & x_features & ")"
+iter = iter + 1
+For j = 1 To UBound(XAverage, 1)
+    Worksheets("Result2").range("A" & iter).Value = "XAverage(" & j & ")=" & XAverage(j)
+    iter = iter + 1
+    Worksheets("Result2").range("A" & iter).Value = "XStandardDeviation(" & j & ")=" & XStandardDeviation(j)
+    iter = iter + 1
+Next j
+Worksheets("Result2").range("A" & iter).Value = "For j = 1 To X.Columns.Count"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "layer(0 , j) = (X(j).Value - XAverage(j))/XStandardDeviation(j)"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "Next j"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "layer(0 , X.columns.count + 1) = 1"
+iter = iter + 1
+For k = 1 To n_hid_layer + 1
+Worksheets("Result2").range("A" & iter).Value = "ReDim aux1(1 To " & n_neurons_hid_layer(k - 1) + 1 & ")"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "ReDim aux2(1 To " & n_neurons_hid_layer(k - 1) + 1 & ", 1 To " & n_neurons_hid_layer(k) & ")"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "For j = 1 To " & n_neurons_hid_layer(k - 1)
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "aux1(j) = layer(" & k - 1 & ", j)"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "Next j"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "aux1(" & n_neurons_hid_layer(k - 1) + 1 & ") =  1"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "For i = 1 To " & n_neurons_hid_layer(k - 1) + 1
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "For j = 1 To " & n_neurons_hid_layer(k)
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "aux2(i, j) = syn(" & k - 1 & ", i, j)"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "Next j"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "Next i"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "Erase aux3"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "aux3 = Application.WorksheetFunction.MMult(aux1, aux2)"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "For j = 1 To " & n_neurons_hid_layer(k)
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "if aux3(j) > 0 then"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "layer(" & k & ", j) = aux3(j)"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "Else"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "layer(" & k & ", j) = 0"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "End if"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "Next j"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "layer(" & k & ", " & n_neurons_hid_layer(k) + 1 & ") = 1"
+iter = iter + 1
+Next k
+Worksheets("Result2").range("A" & iter).Value = "ReDim aux1(1 To n_neurons_hid_layer(RequestedLayer))"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "For i = 1 To n_neurons_hid_layer(RequestedLayer)"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "aux1(i) = layer(RequestedLayer, i)"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "Next i"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "MyNNVisualization = aux1"
+iter = iter + 1
+Worksheets("Result2").range("A" & iter).Value = "End Function"
+End Sub
