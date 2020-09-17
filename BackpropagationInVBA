@@ -27,8 +27,8 @@ Dim YMinimum()
 Dim YMaximum()
 Dim SamplesInBatch As Integer
 Dim NumberOfBatchs As Integer 'For big data samples
-Dim NumberOfIterations As Integer
-Sub InitialSettings()
+Dim NumberOfIterations As Long
+Private Sub InitialSettings()
 Dim UploadOldModel As Boolean
 Dim ChangeArquitecture As Boolean
 '''''Backpropagation system for neural network with a hidden layer. Sigmoid activation function.
@@ -53,24 +53,28 @@ Dim ChangeArquitecture As Boolean
 'Inspired by Emanuele Bonura's work in "A Neural Network in 11 lines…of VBA!"
 'Any suggestion please send it to torrensjoaquin@gmail.com
 '''Parametric Variable
-n_hid_layer = 2
+n_hid_layer = 4
 x_features = 7
 y_features = 1
 ReDim n_neurons_hid_layer(n_hid_layer + 1)
 n_neurons_hid_layer(0) = x_features
-n_neurons_hid_layer(1) = 5
-n_neurons_hid_layer(2) = 5
+n_neurons_hid_layer(1) = 14
+n_neurons_hid_layer(2) = 7
+n_neurons_hid_layer(3) = 7
+n_neurons_hid_layer(4) = 7
 n_neurons_hid_layer(n_hid_layer + 1) = y_features
 SizeOfDataBase = 392
 UploadOldModel = True
-ChangeArquitecture = False
+ChangeArquitecture = True
 SamplesInBatch = 1023
-LearningRatio = 0.00005
-NumberOfIterations = 3000
+LearningRatio = 0.000007
+NumberOfIterations = 20000
 '''
     Worksheets("Data").Select
     XDataSet = Worksheets("Data").range(Cells(2, 1), Cells(SizeOfDataBase + 1, x_features)).Value2
     YDataSet = Worksheets("Data").range(Cells(2, x_features + 1), Cells(SizeOfDataBase + 1, x_features + y_features)).Value2
+'''
+    Call DataNormalization
 '''
     If UploadOldModel = False Then
     
@@ -185,7 +189,7 @@ Beep
 Application.Wait (Now + TimeValue("0:00:01"))
 Beep
 End Sub
-Sub WeightsInitialization()
+Private Sub WeightsInitialization()
 Dim i As Integer
 Dim j As Integer
 Dim z As Integer
@@ -201,7 +205,7 @@ For z = 0 To n_hid_layer
     Next i
 Next z
 End Sub
-Sub WeightsRecyclerInitialization()
+Private Sub WeightsRecyclerInitialization()
 Dim i As Integer
 Dim j As Integer
 Dim z As Integer
@@ -230,7 +234,7 @@ For z = 0 To n_hid_layer
 Next z
 Erase SynAux
 End Sub
-Sub PrintTheFunction()
+Private Sub PrintTheFunction()
 Dim i As Integer
 Dim j As Integer
 Dim z As Integer
@@ -329,7 +333,7 @@ Worksheets("Result").range("A" & iter).Value = "layer(" & k & ", j) = aux3(j)"
 iter = iter + 1
 Worksheets("Result").range("A" & iter).Value = "Else"
 iter = iter + 1
-Worksheets("Result").range("A" & iter).Value = "layer(" & k & ", j) = 0"
+Worksheets("Result").range("A" & iter).Value = "layer(" & k & ", j) = 0.001*aux3(j)"
 iter = iter + 1
 Worksheets("Result").range("A" & iter).Value = "End if"
 iter = iter + 1
@@ -348,7 +352,7 @@ Worksheets("Result").range("A" & iter).Value = "aux1(j) = (aux3(j) -0.1)/0.85 * 
 iter = iter + 1
 Worksheets("Result").range("A" & iter).Value = "Else"
 iter = iter + 1
-Worksheets("Result").range("A" & iter).Value = "aux1(j) = (0 -0.1)/0.85 * (YMaximum(j) - YMinimum(j)) + YMinimum(j)"
+Worksheets("Result").range("A" & iter).Value = "aux1(j) = (0.001 * aux3(j) -0.1)/0.85 * (YMaximum(j) - YMinimum(j)) + YMinimum(j)"
 iter = iter + 1
 Worksheets("Result").range("A" & iter).Value = "End if"
 iter = iter + 1
@@ -360,7 +364,7 @@ Worksheets("Result").range("A" & iter).Value = "MyNeuralNetwork = aux1"
 iter = iter + 1
 Worksheets("Result").range("A" & iter).Value = "End Function"
 End Sub
-Sub BackPropagationAlgorithm(ByRef ZofBatch As Integer)
+Private Sub BackPropagationAlgorithm(ByRef ZofBatch As Integer)
 Dim i As Integer
 Dim j As Integer
 Dim z As Integer
@@ -395,7 +399,7 @@ For k = 1 To n_hid_layer + 1
             If aux3(i, j) > 0 Then
             layer(k, i, j) = aux3(i, j)
             Else
-            layer(k, i, j) = 0
+            layer(k, i, j) = aux3(i, j) * 0.001
             End If
             On Error GoTo 0
         Next j
@@ -417,7 +421,7 @@ For k = n_hid_layer To 0 Step -1
             If layer(k + 1, i, j) > 0 Then
             aux2(i, j) = Layer_Error(k + 1, i, j) 'layer k + 1 Error dot g'
             Else
-            aux2(i, j) = 0
+            aux2(i, j) = 0.001
             End If
             Layer_Delta(k + 1, i, j) = aux2(i, j)
         Next j
@@ -453,31 +457,20 @@ Next i
 '''Show Results
         If iter Mod 100 = 0 Then
             DoEvents
-            If ZofBatch = 1 Then
-                SumSQError = 0
-            End If
             SumSQError = SumSQError + WorksheetFunction.SumSq(A3dTo2d(Layer_Error, n_hid_layer + 1, SizeOfDataBase, y_features))
             If ZofBatch = NumberOfBatchs Then
                 Debug.Print SumSQError
+                SumSQError = 0
             End If
         End If
 End Sub
-Sub DataEntrySubrutine(ByVal z As Integer)
+Private Sub DataEntrySubrutine(ByVal z As Integer)
 Dim i As Integer
 Dim j As Integer
-ReDim XAverage(1 To x_features)
-ReDim XStandardDeviation(1 To x_features)
-'''Calculation of the standard deviation and average for further dataentry normalization
-'''
 For i = 1 To x_features
     For j = 1 To SizeOfDataBase
         X(j, i) = XDataSet(j + (z - 1) * SizeOfDataBase, i)
-        XAverage(i) = XAverage(i) + X(j, i) / SizeOfDataBase
     Next j
-    For j = 1 To SizeOfDataBase
-        XStandardDeviation(i) = XStandardDeviation(i) + (X(j, i) - XAverage(i)) ^ 2 / SizeOfDataBase
-    Next j
-  XStandardDeviation(i) = Sqr(XStandardDeviation(i))
 Next i
 For i = 1 To SizeOfDataBase
     For j = 1 To x_features
@@ -487,35 +480,18 @@ For i = 1 To SizeOfDataBase
 Next i
 '''Y
 ReDim Y(1 To SizeOfDataBase, 1 To y_features)
-For i = 1 To y_features
-    For j = 1 To SizeOfDataBase
-        Y(j, i) = YDataSet(j + (z - 1) * SizeOfDataBase, i)
-    Next j
-Next i
 '''Y (I should add the data scalation)
 '''First lets find out the minimun and maximun value for every y feature
 '''Then cry thinking of how much easy is to do this with other programming lenguages
-ReDim YMaximum(1 To y_features)
-ReDim YMinimum(1 To y_features)
-For i = 1 To y_features
-    For j = 1 To SizeOfDataBase
-        If Y(j, i) > YMaximum(i) Then
-            YMaximum(i) = Y(j, i)
-        End If
-        If Y(j, i) < YMinimum(i) Or YMinimum(i) = "" Then
-            YMinimum(i) = Y(j, i)
-        End If
-    Next
-Next
 '''Let's scale Y
 For i = 1 To y_features
   For j = 1 To SizeOfDataBase
-    Y(j, i) = (Y(j, i) - YMinimum(i)) / (YMaximum(i) - (YMinimum(i))) * 0.85 + 0.1
+    Y(j, i) = (YDataSet(j + (z - 1) * SizeOfDataBase, i) - YMinimum(i)) / (YMaximum(i) - (YMinimum(i))) * 0.85 + 0.1
     layer(n_hid_layer + 1, j, i) = Y(j, i)
   Next j
 Next i
 End Sub
-Function A3dTo2d(X() As Variant, layer As Integer, LargeX As Variant, LargeY As Variant) As Variant
+Private Function A3dTo2d(X() As Variant, layer As Integer, LargeX As Variant, LargeY As Variant) As Variant
 Dim LargeXIteration As Long
 Dim LargeYIteration As Long
 Dim aux() As Variant
@@ -527,7 +503,7 @@ For LargeXIteration = 1 To LargeX
 Next LargeXIteration
 A3dTo2d = aux
 End Function
-Function A3dTo2dTranspose(X() As Variant, layer As Integer, LargeX As Variant, LargeY As Variant) As Variant
+Private Function A3dTo2dTranspose(X() As Variant, layer As Integer, LargeX As Variant, LargeY As Variant) As Variant
 Dim LargeXIteration As Long
 Dim LargeYIteration As Long
 Dim aux() As Variant
@@ -539,7 +515,7 @@ For LargeXIteration = 1 To LargeX
 Next LargeXIteration
 A3dTo2dTranspose = aux
 End Function
-Sub PrintDebuggerFunction()
+Private Sub PrintDebuggerFunction()
 Dim i As Integer
 Dim j As Integer
 Dim z As Integer
@@ -617,7 +593,7 @@ Worksheets("Result2").range("A" & iter).Value = "layer(" & k & ", j) = aux3(j)"
 iter = iter + 1
 Worksheets("Result2").range("A" & iter).Value = "Else"
 iter = iter + 1
-Worksheets("Result2").range("A" & iter).Value = "layer(" & k & ", j) = 0"
+Worksheets("Result2").range("A" & iter).Value = "layer(" & k & ", j) = 0.001 * aux3(j)"
 iter = iter + 1
 Worksheets("Result2").range("A" & iter).Value = "End if"
 iter = iter + 1
@@ -637,4 +613,34 @@ iter = iter + 1
 Worksheets("Result2").range("A" & iter).Value = "MyNNVisualization = aux1"
 iter = iter + 1
 Worksheets("Result2").range("A" & iter).Value = "End Function"
+End Sub
+Private Sub DataNormalization()
+Dim i As Integer
+Dim j As Integer
+ReDim XAverage(1 To x_features)
+ReDim XStandardDeviation(1 To x_features)
+'''Calculation of the standard deviation and average for further dataentry normalization
+'''
+For i = 1 To x_features
+    For j = 1 To SizeOfDataBase
+        XAverage(i) = XAverage(i) + XDataSet(j, i) / SizeOfDataBase
+    Next j
+    For j = 1 To SizeOfDataBase
+        XStandardDeviation(i) = XStandardDeviation(i) + (XDataSet(j, i) - XAverage(i)) ^ 2 / SizeOfDataBase
+    Next j
+  XStandardDeviation(i) = Sqr(XStandardDeviation(i))
+Next i
+'''Y
+ReDim YMaximum(1 To y_features)
+ReDim YMinimum(1 To y_features)
+For i = 1 To y_features
+    For j = 1 To SizeOfDataBase
+        If YDataSet(j, i) > YMaximum(i) Then
+            YMaximum(i) = YDataSet(j, i)
+        End If
+        If YDataSet(j, i) < YMinimum(i) Or YMinimum(i) = "" Then
+            YMinimum(i) = YDataSet(j, i)
+        End If
+    Next
+Next
 End Sub
