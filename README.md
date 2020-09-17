@@ -18,7 +18,9 @@
 #### iter= Number of iterations
 #### LearningRatio = 'You can perform a range test every time you want. This value will depend on the dataset and NN architecture.
 # Comming Soon:
-#### A diagnosis tool.
 #### Training/Test division.
-## During this work Softplus, Sigmoid, Tanh and Relu Function were implemented. Relu is in the stable versión. (Yes, we all look at ReLu at first and say, No Way!, but today is the right choice)
+## During this work Softplus, Sigmoid, Tanh, Relu and LeakyRelu activation functions were implemented. LeakyRelu is in the stable versión. (Yes, we all look at ReLu at first and say, No Way!, but today is the right choice)
 #### Please. Have the inmediate window visible. Data will be shown
+## Diagnosis tool:
+#### If the sheet named "Result2" is added. A function of the raw output of each layer will be displayed.
+#### This will be usefull for dimensionality reduction (autoencoders), and network health diagnosis.
