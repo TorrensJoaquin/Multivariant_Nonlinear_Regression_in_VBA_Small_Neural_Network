@@ -18,7 +18,9 @@
 #### NumberOfIterations= Number of iterations
 #### LearningRatio = 'You can perform a range test every time you want. This value will depend on the dataset and NN architecture.
 # Comming Soon:
-#### Training/Test division.
+#### More activation functions to be chosen.
+#### More loss functions to be chosen.
+#### GUI.
 ## During this work Softplus, Sigmoid, Tanh, Relu and LeakyRelu activation functions were implemented. LeakyRelu is in the stable versión. (Yes, we all look at ReLu at first and say, No Way!, but today is the right choice)
 #### Please. Have the inmediate window visible. Data will be shown
 ## Diagnosis tool:
