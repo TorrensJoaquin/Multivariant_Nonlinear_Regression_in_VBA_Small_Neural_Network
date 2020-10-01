@@ -1,6 +1,6 @@
 # Multivariant-Nonlinear-Regression-in-VBA-Small-Neural-Network
 #### Despite the big boom in Neural Networks, the common workers are still outside of its capabilities.
-#### The idea of this proyect is to provide an easy tool for small neural networks (something around 6 layers and 80 neurons maybe).
+#### The idea of this proyect is to provide an easy tool for small neural networks (something around 6 layers and 200 neurons maybe).
 #### It has to run without any other software than Microsoft Excel.
 #### This work was inspired by Emanuele Bonura's Blog called "A Neural Network in 11 lines…of VBA!" and Carlos Ruiz, my former teacher from UTN FRRo.
 #### You will need a sheet called "Data" were you can put the data. (x's [inputs] on the left, y's [outputs] on the right, and the first row will be the header)
