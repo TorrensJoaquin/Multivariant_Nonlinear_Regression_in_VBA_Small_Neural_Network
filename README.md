@@ -18,6 +18,7 @@
 #### NumberOfIterations= Number of iterations
 #### LearningRatio = 'You can perform a range test every time you want. This value will depend on the dataset and NN architecture.
 # Comming Soon:
+#### Code Optimization.
 #### More activation functions to be chosen.
 #### More loss functions to be chosen.
 #### GUI.
