@@ -61,19 +61,26 @@ Private Sub InitialSettings()
     'Built by Joaquín Torrens
     'Any suggestion please send it to torrensjoaquin@gmail.com
     '''Parametric Variable
-    n_hid_layer = 1                                 'DEFINED BY USER
+    n_hid_layer = 8                                 'DEFINED BY USER
     x_features = 7                                  'DEFINED BY USER
     y_features = 1                                  'DEFINED BY USER
     ReDim n_neurons_hid_layer(n_hid_layer + 1)
     n_neurons_hid_layer(0) = x_features
     n_neurons_hid_layer(1) = 7                      'DEFINED BY USER/You may need to add more according to n_hid_layer
+    n_neurons_hid_layer(2) = 7                      'DEFINED BY USER/You may need to add more according to n_hid_layer
+    n_neurons_hid_layer(3) = 7                      'DEFINED BY USER/You may need to add more according to n_hid_layer
+    n_neurons_hid_layer(4) = 7                      'DEFINED BY USER/You may need to add more according to n_hid_layer
+    n_neurons_hid_layer(5) = 7                      'DEFINED BY USER/You may need to add more according to n_hid_layer
+    n_neurons_hid_layer(6) = 7                      'DEFINED BY USER/You may need to add more according to n_hid_layer
+    n_neurons_hid_layer(7) = 7                      'DEFINED BY USER/You may need to add more according to n_hid_layer
+    n_neurons_hid_layer(8) = 7                      'DEFINED BY USER/You may need to add more according to n_hid_layer
     n_neurons_hid_layer(n_hid_layer + 1) = y_features
     SizeOfDataBase = 381                            'DEFINED BY USER
     SizeOfTestSet = 11                              'DEFINED BY USER
     UploadOldModel = True                           'DEFINED BY USER
     ChangeArquitecture = True                       'DEFINED BY USER
     SamplesInBatch = 1023
-    LearningRatio = 0.001                           'DEFINED BY USER
+    LearningRatio = 0.1                           'DEFINED BY USER
     NumberOfIterations = 6000                       'DEFINED BY USER
     Beta1 = 0.9
     Beta2 = 0.99
@@ -257,9 +264,7 @@ Sub InitiateBackPropagationAlgorithm()
     Next iter
     ''Print the Function
     Call PrintTheFunction
-    On Error Resume Next
     Call PrintDebuggerFunction
-    On Error GoTo 0
     'This will make a sound to wake you up
     Beep
     Application.Wait (Now + TimeValue("0:00:01"))
@@ -600,6 +605,7 @@ Private Function A3dTo2dTranspose(X() As Variant, layer As Integer, LargeX As Va
 End Function
 Private Sub PrintDebuggerFunction()
     Call TurnOffStuff
+    On Error Resume Next
     Dim i As Integer
     Dim j As Integer
     Dim z As Integer
@@ -699,6 +705,7 @@ Private Sub PrintDebuggerFunction()
     Worksheets("Result2").Range("A" & iter).Value = "MyNNVisualization = aux1"
     iter = iter + 1
     Worksheets("Result2").Range("A" & iter).Value = "End Function"
+    On Error GoTo 0
     Call TurnOnStuff
 End Sub
 Private Sub DataNormalization()
