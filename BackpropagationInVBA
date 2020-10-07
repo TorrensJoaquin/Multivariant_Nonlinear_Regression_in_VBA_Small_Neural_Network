@@ -27,8 +27,7 @@ Dim aux3() As Variant
 Dim LearningRatio As Double
 Dim XAverage() As Double 'Tool for the input normalization x-u/std
 Dim XStandardDeviation() As Double 'Tool for the input normalization x-u/std
-Dim SumSQError As Double
-Dim SumSQErrorTest As Double
+Dim SumSQError() As Double  '4 Rows (learningratio, SumSQErrorTrain, SumSQErrorTest ,iter)
 Dim YMinimum()
 Dim YMaximum()
 Dim SamplesInBatch As Integer
@@ -67,14 +66,14 @@ Private Sub InitialSettings()
     y_features = 1                                  'DEFINED BY USER
     ReDim n_neurons_hid_layer(n_hid_layer + 1)
     n_neurons_hid_layer(0) = x_features
-    n_neurons_hid_layer(1) = 7                      'DEFINED BY USER/You will need to add more according to n_hid_layer
+    n_neurons_hid_layer(1) = 7                      'DEFINED BY USER/You may need to add more according to n_hid_layer
     n_neurons_hid_layer(n_hid_layer + 1) = y_features
     SizeOfDataBase = 381                            'DEFINED BY USER
     SizeOfTestSet = 11                              'DEFINED BY USER
     UploadOldModel = True                           'DEFINED BY USER
     ChangeArquitecture = True                       'DEFINED BY USER
     SamplesInBatch = 1023
-    LearningRatio = 0.0001                          'DEFINED BY USER
+    LearningRatio = 0.001                           'DEFINED BY USER
     NumberOfIterations = 6000                       'DEFINED BY USER
     Beta1 = 0.9
     Beta2 = 0.99
@@ -123,6 +122,7 @@ Sub TestLearningRatioRange()
     '''
         Call InitialSettings
     ''
+    ReDim SumSQError(1 To 4, 1) ''(learningratio, SumSQErrorTrain, SumSQErrorTest ,iter)
     ReDim layer(0 To n_hid_layer + 1, 1 To SizeOfDataBase, 1 To Application.WorksheetFunction.Max(n_neurons_hid_layer) + 1)
     ReDim TestLayer(0 To n_hid_layer + 1, 1 To SizeOfTestSet, 1 To Application.WorksheetFunction.Max(n_neurons_hid_layer) + 1)
     ReDim TestError(1 To SizeOfTestSet, 1 To y_features)
@@ -195,8 +195,9 @@ Sub TestLearningRatioRange()
     Beep
 End Sub
 Sub InitiateBackPropagationAlgorithm()
-        Call InitialSettings
+    Call InitialSettings
     ''
+    ReDim SumSQError(1 To 4, 1) ''(learningratio, SumSQErrorTrain, SumSQErrorTest ,iter)
     ReDim layer(0 To n_hid_layer + 1, 1 To SizeOfDataBase, 1 To Application.WorksheetFunction.Max(n_neurons_hid_layer) + 1)
     ReDim TestLayer(0 To n_hid_layer + 1, 1 To SizeOfTestSet, 1 To Application.WorksheetFunction.Max(n_neurons_hid_layer) + 1)
     ReDim Layer_Error(0 To n_hid_layer + 1, 1 To SizeOfDataBase, 1 To Application.WorksheetFunction.Max(n_neurons_hid_layer) + 1)
@@ -471,22 +472,6 @@ Private Sub BackPropagationAlgorithm()
     Dim j As Integer
     Dim z As Integer
     Dim k As Integer
-    'Layer 0    Layer 1     Layer 2     Layer 3     Layer 4
-    '
-    '           n1          n1          n1
-    '           n2          n2          n2
-    'x1         n3          n3          n3
-    '           n4          n4          n4          y1
-    'x2         n5          n5
-    '           n6          n6
-    'x3         n7
-    '           n8
-    'x4         n9
-    '           n10
-    '
-    '   syn0(4x10)  syn1(10x6)  syn2(6x4)   syn3(4x1)
-    '   b0(4x1)     b1(10x1)    b2(6x1)     b3(4x1)
-    '   l0(4xn)     l1(10xn)    l2(7xn)     l3(5xn)     l4(1xn)
     '''''''''''Forward Propagation
     For k = 1 To n_hid_layer
         aux1 = A3dTo2d(layer, k - 1, SizeOfDataBase, n_neurons_hid_layer(k - 1) + 1)
@@ -506,9 +491,9 @@ Private Sub BackPropagationAlgorithm()
         Next i
     Next k
     '''''''''''Output Last Layer and Error calculation
-        aux1 = A3dTo2d(layer, n_hid_layer, SizeOfDataBase, n_neurons_hid_layer(n_hid_layer) + 1)
-        aux2 = A3dTo2d(syn, n_hid_layer, n_neurons_hid_layer(n_hid_layer) + 1, n_neurons_hid_layer(n_hid_layer + 1))
-        aux3 = Application.WorksheetFunction.MMult(aux1, aux2)
+    aux1 = A3dTo2d(layer, n_hid_layer, SizeOfDataBase, n_neurons_hid_layer(n_hid_layer) + 1)
+    aux2 = A3dTo2d(syn, n_hid_layer, n_neurons_hid_layer(n_hid_layer) + 1, n_neurons_hid_layer(n_hid_layer + 1))
+    aux3 = Application.WorksheetFunction.MMult(aux1, aux2)
     For i = 1 To SizeOfDataBase
         For j = 1 To y_features
                 On Error Resume Next
@@ -752,12 +737,14 @@ Private Sub ShowResults(ZofBatch As Integer)
     If iter Mod 100 = 0 Then
         DoEvents
         Call TestForwardPropagation
-        SumSQError = SumSQError + WorksheetFunction.SumSq(A3dTo2d(Layer_Error, n_hid_layer + 1, SizeOfDataBase, y_features))
-        SumSQErrorTest = SumSQErrorTest + WorksheetFunction.SumSq(TestError)
+        SumSQError(1, UBound(SumSQError, 2)) = LearningRatio
+        SumSQError(2, UBound(SumSQError, 2)) = SumSQError(2, UBound(SumSQError, 2)) + WorksheetFunction.SumSq(A3dTo2d(Layer_Error, n_hid_layer + 1, SizeOfDataBase, y_features))
+        SumSQError(3, UBound(SumSQError, 2)) = SumSQError(3, UBound(SumSQError, 2)) + WorksheetFunction.SumSq(TestError)
+        SumSQError(4, UBound(SumSQError, 2)) = iter
         If ZofBatch = NumberOfBatchs Then
-            Debug.Print "Train Error " & SumSQError & "     Test Error " & SumSQErrorTest & "     Iter: " & iter
-            SumSQError = 0
-            SumSQErrorTest = 0
+            Debug.Print "Train Error " & SumSQError(2, UBound(SumSQError, 2)) & "     Test Error " & SumSQError(3, UBound(SumSQError, 2)) & "     Iter: " & SumSQError(4, UBound(SumSQError, 2)) & "     Learning Ratio: " & SumSQError(1, UBound(SumSQError, 2))
+            Call LearningRatioAdjustment
+            ReDim Preserve SumSQError(1 To 4, UBound(SumSQError, 2) + 1) ''(learningratio, SumSQErrorTrain, SumSQErrorTest ,iter)
         End If
     End If
 End Sub
@@ -817,4 +804,11 @@ End Sub
 Private Sub TurnOnStuff()
     Application.Calculation = True
     Application.ScreenUpdating = True
+End Sub
+Private Sub LearningRatioAdjustment()
+    If iter <> 0 Then
+        If SumSQError(2, UBound(SumSQError, 2) - 1) < SumSQError(2, UBound(SumSQError, 2)) Then
+            LearningRatio = LearningRatio / 2
+        End If
+    End If
 End Sub
