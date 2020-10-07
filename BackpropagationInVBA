@@ -32,7 +32,7 @@ Dim SumSQErrorTest As Double
 Dim YMinimum()
 Dim YMaximum()
 Dim SamplesInBatch As Integer
-Dim NumberOfBatchs As Integer 'For big data samples
+Dim NumberOfBatchs As Integer 'For handling big data samples
 Dim NumberOfIterations As Long
 Dim Beta1 As Double
 Dim OneMinusBeta1 As Double
@@ -62,20 +62,20 @@ Dim ChangeArquitecture As Boolean
 'Built by Joaquín Torrens
 'Any suggestion please send it to torrensjoaquin@gmail.com
 '''Parametric Variable
-n_hid_layer = 1
-x_features = 7
-y_features = 1
+n_hid_layer = 1                                 'DEFINED BY USER
+x_features = 7                                  'DEFINED BY USER
+y_features = 1                                  'DEFINED BY USER
 ReDim n_neurons_hid_layer(n_hid_layer + 1)
 n_neurons_hid_layer(0) = x_features
-n_neurons_hid_layer(1) = 7
+n_neurons_hid_layer(1) = 7                      'DEFINED BY USER
 n_neurons_hid_layer(n_hid_layer + 1) = y_features
-SizeOfDataBase = 381
-SizeOfTestSet = 11
-UploadOldModel = True
-ChangeArquitecture = True
+SizeOfDataBase = 381                            'DEFINED BY USER
+SizeOfTestSet = 11                              'DEFINED BY USER
+UploadOldModel = True                           'DEFINED BY USER
+ChangeArquitecture = True                       'DEFINED BY USER
 SamplesInBatch = 1023
-LearningRatio = 0.0001
-NumberOfIterations = 6000
+LearningRatio = 0.0001                          'DEFINED BY USER
+NumberOfIterations = 6000                       'DEFINED BY USER
 Beta1 = 0.9
 Beta2 = 0.99
 OneMinusBeta1 = 1 - Beta1
@@ -316,6 +316,7 @@ Erase SynAux
 WeightsRecyclerInitialization = syn
 End Function
 Private Sub PrintTheFunction()
+Call TurnOffStuff
 Dim i As Integer
 Dim j As Integer
 Dim z As Integer
@@ -463,6 +464,7 @@ Next k
 Worksheets("Result").Range("A" & iter).Value = "MyNeuralNetwork = aux1"
 iter = iter + 1
 Worksheets("Result").Range("A" & iter).Value = "End Function"
+Call TurnOnStuff
 End Sub
 Private Sub BackPropagationAlgorithm()
 Dim i As Integer
@@ -486,10 +488,7 @@ Dim k As Integer
 '   b0(4x1)     b1(10x1)    b2(6x1)     b3(4x1)
 '   l0(4xn)     l1(10xn)    l2(7xn)     l3(5xn)     l4(1xn)
 '''''''''''Forward Propagation
-For k = 1 To n_hid_layer + 1
-    Erase aux1
-    Erase aux2
-    Erase aux3
+For k = 1 To n_hid_layer
     aux1 = A3dTo2d(layer, k - 1, SizeOfDataBase, n_neurons_hid_layer(k - 1) + 1)
     aux2 = A3dTo2d(syn, k - 1, n_neurons_hid_layer(k - 1) + 1, n_neurons_hid_layer(k))
     aux3 = Application.WorksheetFunction.MMult(aux1, aux2)
@@ -506,9 +505,19 @@ For k = 1 To n_hid_layer + 1
         layer(k, i, n_neurons_hid_layer(k) + 1) = 1 ''Add the bias Layer
     Next i
 Next k
-'''''''''''Output Error calculation
+'''''''''''Output Last Layer and Error calculation
+    aux1 = A3dTo2d(layer, n_hid_layer, SizeOfDataBase, n_neurons_hid_layer(n_hid_layer) + 1)
+    aux2 = A3dTo2d(syn, n_hid_layer, n_neurons_hid_layer(n_hid_layer) + 1, n_neurons_hid_layer(n_hid_layer + 1))
+    aux3 = Application.WorksheetFunction.MMult(aux1, aux2)
 For i = 1 To SizeOfDataBase
     For j = 1 To y_features
+            On Error Resume Next
+            If aux3(i, j) > 0 Then
+                layer(n_hid_layer + 1, i, j) = aux3(i, j)
+            Else
+                layer(n_hid_layer + 1, i, j) = aux3(i, j) * 0.001
+            End If
+            On Error GoTo 0
         Layer_Error(n_hid_layer + 1, i, j) = Y(i, j) - layer(n_hid_layer + 1, i, j)
     Next j
 Next i
@@ -607,6 +616,7 @@ Next LargeXIteration
 A3dTo2dTranspose = aux
 End Function
 Private Sub PrintDebuggerFunction()
+Call TurnOffStuff
 Dim i As Integer
 Dim j As Integer
 Dim z As Integer
@@ -706,6 +716,7 @@ iter = iter + 1
 Worksheets("Result2").Range("A" & iter).Value = "MyNNVisualization = aux1"
 iter = iter + 1
 Worksheets("Result2").Range("A" & iter).Value = "End Function"
+Call TurnOnStuff
 End Sub
 Private Sub DataNormalization()
 Dim i As Integer
@@ -798,4 +809,12 @@ For i = 1 To SizeOfTestSet
         YTest(i, j) = (TestSet(i, x_features + j) - YMinimum(j)) / (YMaximum(j) - (YMinimum(j))) * 0.85 + 0.1
     Next j
 Next i
+End Sub
+Private Sub TurnOffStuff()
+    Application.Calculation = False
+    Application.ScreenUpdating = False
+End Sub
+Private Sub TurnOnStuff()
+    Application.Calculation = True
+    Application.ScreenUpdating = True
 End Sub
