@@ -122,7 +122,6 @@ Sub TestLearningRatioRange()
     '''
         Call InitialSettings
     ''
-    ReDim SumSQError(1 To 4, 1) ''(learningratio, SumSQErrorTrain, SumSQErrorTest ,iter)
     ReDim layer(0 To n_hid_layer + 1, 1 To SizeOfDataBase, 1 To Application.WorksheetFunction.Max(n_neurons_hid_layer) + 1)
     ReDim TestLayer(0 To n_hid_layer + 1, 1 To SizeOfTestSet, 1 To Application.WorksheetFunction.Max(n_neurons_hid_layer) + 1)
     ReDim TestError(1 To SizeOfTestSet, 1 To y_features)
@@ -182,8 +181,7 @@ Sub TestLearningRatioRange()
         '''
         Call BackPropagationAlgorithm
         '''
-        SumSQError = WorksheetFunction.SumSq(A3dTo2d(Layer_Error, n_hid_layer + 1, SizeOfDataBase, y_features))
-        LearningRatioRangeResult(LearningRatioIndex) = SumSQError
+        LearningRatioRangeResult(LearningRatioIndex) = WorksheetFunction.SumSq(A3dTo2d(Layer_Error, n_hid_layer + 1, SizeOfDataBase, y_features))
         Debug.Print LearningRatioRangeArray(LearningRatioIndex) & "  ---> " & LearningRatioRangeResult(LearningRatioIndex)
         '''
     Next LearningRatioIndex
