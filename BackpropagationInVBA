@@ -15,8 +15,7 @@ Dim LearningRatio As Double
 Dim XAverage() As Double 'Tool for the input normalization x-u/std
 Dim XStandardDeviation() As Double 'Tool for the input normalization x-u/std
 Dim SumSQError() As Double  '4 Rows (learningratio, SumSQErrorTrain, SumSQErrorTest ,iter)
-Dim YMinimum()
-Dim YMaximum()
+Dim YMinimum(), YMaximum()
 Dim SamplesInBatch As Integer
 Dim NumberOfBatchs As Integer 'For handling big data samples
 Dim NumberOfIterations As Long
@@ -68,7 +67,7 @@ Private Sub InitialSettings()
     ChangeArquitecture = False                      'DEFINED BY USER
     SamplesInBatch = 1023
     LearningRatio = 0.1                             'DEFINED BY USER
-    NumberOfIterations = 5000                       'DEFINED BY USER
+    NumberOfIterations = 500                        'DEFINED BY USER
     Beta1 = 0.9
     Beta2 = 0.99
     OneMinusBeta1 = 1 - Beta1
@@ -79,18 +78,16 @@ Private Sub InitialSettings()
         DataSet = Worksheets("Data").Range(Cells(2, 1), Cells(SizeOfDataBase + 1, x_features + y_features)).Value2
     '''
         'If the TestSet is too big will cause an error in the matrix multiplication.
-        If SizeOfTestSet > 1023 Then
-            SizeOfTestSet = 1023
-        End If
+        If SizeOfTestSet > 1023 Then SizeOfTestSet = 1023
         'Upload the TestSet
         Worksheets("Test").Select
         TestSet = Worksheets("Test").Range(Cells(2, 1), Cells(SizeOfTestSet + 1, x_features + y_features)).Value2
     '''
         Call DataNormalization
     '''
-        If UploadOldModel = False Then
+        If Not (UploadOldModel) Then
             syn = WeightsInitialization(n_hid_layer, n_neurons_hid_layer)
-        ElseIf UploadOldModel = True And ChangeArquitecture = True Then
+        ElseIf UploadOldModel And ChangeArquitecture Then
             syn = WeightsRecyclerInitialization(n_hid_layer, n_neurons_hid_layer, MyNeuralWyB())
         Else
             syn = MyNeuralWyB()
@@ -104,7 +101,7 @@ Private Sub InitialSettings()
         Else
             NumberOfBatchs = 1
     End If
-        ReDim X(1 To SizeOfDataBase, 1 To x_features) As Variant
+    ReDim X(1 To SizeOfDataBase, 1 To x_features) As Variant
 End Sub
 Sub TestLearningRatioRange()
     '''
@@ -116,10 +113,7 @@ Sub TestLearningRatioRange()
     ReDim Layer_Error(0 To n_hid_layer + 1, 1 To SizeOfDataBase, 1 To Application.WorksheetFunction.Max(n_neurons_hid_layer) + 1)
     ReDim Layer_Delta(0 To n_hid_layer + 1, 1 To SizeOfDataBase, 1 To Application.WorksheetFunction.Max(n_neurons_hid_layer) + 1)
     ReDim YTest(1 To SizeOfTestSet, 1 To y_features)
-    Dim z As Integer
-    Dim j As Long
-    Dim i As Long
-    Dim k As Long
+    Dim z As Integer, i As Long, j As Long, k As Long
     Dim MaximumNumberOfNeuronsInLayer As Integer
     MaximumNumberOfNeuronsInLayer = Application.WorksheetFunction.Max(n_neurons_hid_layer) + 1
     Dim LearningRatioIndex As Integer
@@ -149,7 +143,7 @@ Sub TestLearningRatioRange()
                 Next i
             Next j
         Next iter
-    ''''''''Then, 10 iterations with ADAM
+        ''''''''Then, 10 iterations with ADAM
         For iter = 0 To 10
             '''
             ReDim Gradients(n_hid_layer, 1 To MaximumNumberOfNeuronsInLayer, 1 To MaximumNumberOfNeuronsInLayer)
@@ -192,10 +186,7 @@ Sub InitiateBackPropagationAlgorithm()
     ReDim DecayingAverages(n_hid_layer, 1 To Application.WorksheetFunction.Max(n_neurons_hid_layer) + 1, 1 To Application.WorksheetFunction.Max(n_neurons_hid_layer) + 1)
     ReDim DecayingAveragesSq(n_hid_layer, 1 To Application.WorksheetFunction.Max(n_neurons_hid_layer) + 1, 1 To Application.WorksheetFunction.Max(n_neurons_hid_layer) + 1)
     ReDim YTest(1 To SizeOfTestSet, 1 To y_features)
-    Dim z As Integer
-    Dim j As Long
-    Dim i As Long
-    Dim k As Long
+    Dim z As Integer, i As Long, j As Long, k As Long
     Dim MaximumNumberOfNeuronsInLayer As Integer
     MaximumNumberOfNeuronsInLayer = Application.WorksheetFunction.Max(n_neurons_hid_layer) + 1
     ''The first two iterations must be biases corrected
@@ -229,7 +220,6 @@ Sub InitiateBackPropagationAlgorithm()
         For z = 1 To NumberOfBatchs
         '''Entry Data
             Call DataEntrySubrutine(z)
-        '''
             Call BackPropagationAlgorithm
         '''Show Results
             Call ShowResults(z)
@@ -247,21 +237,15 @@ Sub InitiateBackPropagationAlgorithm()
     Call PrintTheFunction
     Call PrintDebuggerFunction
     'This will make a sound to wake you up
-    Beep
-    Application.Wait (Now + TimeValue("0:00:01"))
-    Beep
-    Application.Wait (Now + TimeValue("0:00:01"))
-    Beep
+: Beep: Application.Wait (Now + TimeValue("0:00:01")): Beep: Application.Wait (Now + TimeValue("0:00:01")): Beep
 End Sub
 Private Function WeightsInitialization(n_hid_layer As Integer, n_neurons_hid_layer As Variant) As Variant
-    Dim i As Integer
-    Dim j As Integer
-    Dim z As Integer
+    Dim i As Integer, j As Integer, z As Integer
     Dim XavierDeviation As Double
     ReDim syn(n_hid_layer, 1 To Application.WorksheetFunction.Max(n_neurons_hid_layer) + 1, 1 To Application.WorksheetFunction.Max(n_neurons_hid_layer) + 1)
     'Randomize Hidden Layers
     For z = 0 To n_hid_layer
-        XavierDeviation = 1 / Sqr((n_neurons_hid_layer(z) + n_neurons_hid_layer(z + 1)) / 2)
+        XavierDeviation = 1 / Sqr((n_neurons_hid_layer(z) + n_neurons_hid_layer(z + 1)) * 0.5)
         For i = 1 To n_neurons_hid_layer(z) + 1
             For j = 1 To n_neurons_hid_layer(z + 1)
                 syn(z, i, j) = Abs(Application.WorksheetFunction.Norm_Inv(Rnd(), 0, XavierDeviation))
@@ -286,12 +270,10 @@ Private Function WeightsRecyclerInitialization(n_hid_layer As Integer, n_neurons
     Next z
     'Randomize Weights and bias that not exist
     For z = 0 To n_hid_layer
-        XavierDeviation = 1 / Sqr((n_neurons_hid_layer(z) + n_neurons_hid_layer(z + 1)) / 2)
+        XavierDeviation = 1 / Sqr((n_neurons_hid_layer(z) + n_neurons_hid_layer(z + 1)) * 0.5)
         For i = 1 To n_neurons_hid_layer(z) + 1
             For j = 1 To n_neurons_hid_layer(z + 1)
-                If syn(z, i, j) = 0 Then
-                    syn(z, i, j) = Abs(Application.WorksheetFunction.Norm_Inv(Rnd(), 0, XavierDeviation))
-                End If
+                If syn(z, i, j) = 0 Then syn(z, i, j) = Abs(Application.WorksheetFunction.Norm_Inv(Rnd(), 0, XavierDeviation))
             Next j
         Next i
     Next z
@@ -432,16 +414,11 @@ Private Sub BackPropagationAlgorithm()
                 Else
                     aux2(i, j) = 0.001
                 End If
-                    Layer_Delta(k + 1, i, j) = aux2(i, j)
+                Layer_Delta(k + 1, i, j) = aux2(i, j)
             Next j
         Next i
-    
-        Erase aux1
         aux1 = A3dTo2dTranspose(syn, k, n_neurons_hid_layer(k) + 1, n_neurons_hid_layer(k + 1))
-    
-        Erase aux3
         aux3 = Application.WorksheetFunction.MMult(aux2, aux1)
-    
         For i = 1 To SizeOfDataBase
             For j = 1 To n_neurons_hid_layer(k) + 1
                 Layer_Error(k, i, j) = aux3(i, j)
@@ -450,9 +427,6 @@ Private Sub BackPropagationAlgorithm()
     Next k
     ''''''''''UPDATE WEIGHTS AND BIAS
     For i = n_hid_layer To 0 Step -1
-        Erase aux1
-        Erase aux2
-        Erase aux3
         aux1 = A3dTo2d(Layer_Delta, i + 1, SizeOfDataBase, n_neurons_hid_layer(i + 1))
         aux2 = A3dTo2dTranspose(layer, i, SizeOfDataBase, n_neurons_hid_layer(i) + 1)
         aux3 = Application.WorksheetFunction.MMult(aux2, aux1)
@@ -466,8 +440,7 @@ Private Sub BackPropagationAlgorithm()
     Next i
 End Sub
 Private Sub DataEntrySubrutine(ByRef z As Integer)
-    Dim i As Integer
-    Dim j As Integer
+    Dim i As Integer, j As Integer
     For i = 1 To x_features
         For j = 1 To SizeOfDataBase
             X(j, i) = DataSet(j + (z - 1) * SizeOfDataBase, i)
@@ -477,7 +450,7 @@ Private Sub DataEntrySubrutine(ByRef z As Integer)
         For j = 1 To x_features
             layer(0, i, j) = (X(i, j) - XAverage(j)) / XStandardDeviation(j)
         Next j
-            layer(0, i, n_neurons_hid_layer(0) + 1) = 1
+        layer(0, i, n_neurons_hid_layer(0) + 1) = 1
     Next i
     '''Y
     ReDim Y(1 To SizeOfDataBase, 1 To y_features)
@@ -491,10 +464,8 @@ Private Sub DataEntrySubrutine(ByRef z As Integer)
     Next i
 End Sub
 Private Function A3dTo2d(X() As Variant, layer As Integer, LargeX As Variant, LargeY As Variant) As Variant
-    Dim LargeXIteration As Long
-    Dim LargeYIteration As Long
-    Dim aux() As Variant
-    ReDim aux(1 To LargeX, 1 To LargeY)
+    Dim LargeXIteration As Long, LargeYIteration As Long
+    Dim aux() As Variant: ReDim aux(1 To LargeX, 1 To LargeY)
     For LargeXIteration = 1 To LargeX
         For LargeYIteration = 1 To LargeY
             aux(LargeXIteration, LargeYIteration) = X(layer, LargeXIteration, LargeYIteration)
@@ -503,10 +474,8 @@ Private Function A3dTo2d(X() As Variant, layer As Integer, LargeX As Variant, La
     A3dTo2d = aux
 End Function
 Private Function A3dTo2dTranspose(X() As Variant, layer As Integer, LargeX As Variant, LargeY As Variant) As Variant
-    Dim LargeXIteration As Long
-    Dim LargeYIteration As Long
-    Dim aux() As Variant
-    ReDim aux(1 To LargeY, 1 To LargeX)
+    Dim LargeXIteration As Long, LargeYIteration As Long
+    Dim aux() As Variant: ReDim aux(1 To LargeY, 1 To LargeX)
     For LargeXIteration = 1 To LargeX
         For LargeYIteration = 1 To LargeY
             aux(LargeYIteration, LargeXIteration) = X(layer, LargeXIteration, LargeYIteration)
@@ -577,7 +546,6 @@ Private Sub DataNormalization()
     ReDim XAverage(1 To x_features)
     ReDim XStandardDeviation(1 To x_features)
     '''Calculation of the standard deviation and average for further dataentry normalization
-    '''
     For i = 1 To x_features
         For j = 1 To SizeOfDataBase
             XAverage(i) = XAverage(i) + DataSet(j, i) / SizeOfDataBase
@@ -591,12 +559,8 @@ Private Sub DataNormalization()
     ReDim YMaximum(1 To y_features): ReDim YMinimum(1 To y_features)
     For i = 1 To y_features
         For j = 1 To SizeOfDataBase
-            If DataSet(j, x_features + i) > YMaximum(i) Then
-                YMaximum(i) = DataSet(j, x_features + i)
-            End If
-            If DataSet(j, x_features + i) < YMinimum(i) Or YMinimum(i) = "" Then
-                YMinimum(i) = DataSet(j, x_features + i)
-            End If
+            If DataSet(j, x_features + i) > YMaximum(i) Then YMaximum(i) = DataSet(j, x_features + i)
+            If DataSet(j, x_features + i) < YMinimum(i) Or YMinimum(i) = "" Then YMinimum(i) = DataSet(j, x_features + i)
         Next
     Next
 End Sub
@@ -649,7 +613,7 @@ Private Sub TestSetSubrutine()
         For j = 1 To x_features
             TestLayer(0, i, j) = (TestSet(i, j) - XAverage(j)) / XStandardDeviation(j)
         Next j
-            TestLayer(0, i, n_neurons_hid_layer(0) + 1) = 1
+        TestLayer(0, i, n_neurons_hid_layer(0) + 1) = 1
     Next i
     'YTest
     For i = 1 To SizeOfTestSet
@@ -661,9 +625,5 @@ End Sub
 Private Sub TurnOffStuff(): Application.Calculation = False: Application.ScreenUpdating = False: End Sub
 Private Sub TurnOnStuff(): Application.Calculation = True: Application.ScreenUpdating = True: End Sub
 Private Sub LearningRatioAdjustment()
-    If iter <> 0 Then
-        If SumSQError(2, UBound(SumSQError, 2) - 1) < SumSQError(2, UBound(SumSQError, 2)) Then
-            LearningRatio = LearningRatio / 2
-        End If
-    End If
+    If iter <> 0 Then If SumSQError(2, UBound(SumSQError, 2) - 1) < SumSQError(2, UBound(SumSQError, 2)) Then LearningRatio = LearningRatio * 0.5
 End Sub
